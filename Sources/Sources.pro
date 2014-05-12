@@ -26,9 +26,14 @@ HEADERS  += mainwindow.h \
     qsoundprocessor.h \
     qharmonicprocessor.h
 
+#------------MANUAL_CHOOSE_THE_PLATFORM_TO_COMPILE----------------------
+#This option is managed automatically when you chose the Kit for compilation
+#win32-msvc*:QMAKE_TARGET.arch = x86_64
+#win32-msvc*:QMAKE_TARGET.arch = $$QMAKE_HOST.arch
+
 #-----------------------------FFTW--------------------------------------
 #for MSVC compiller
-win32-msvc* {
+win32-msvc*{
         win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
             message( "Building for 64 bit, mscv compiller" )
             LIBS += -L$$PWD/../Resources/fftw3-64/ -llibfftw3-3

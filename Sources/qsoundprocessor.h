@@ -45,9 +45,9 @@ private:
     qreal processed_milliseconds;
 
 private slots:
-    void set_format_samplerate(quint16 value);
-    void set_format_channelcount(quint16 value);
-    void set_format_samplesize(quint16 value);
+    void set_format_samplerate(int value);
+    void set_format_channelcount(int value);
+    void set_format_samplesize(int value);
     void set_format_codecname(const QString& value);
     void set_format_byteorder(QAudioFormat::Endian value);
     void set_format_sampletype(QAudioFormat::SampleType value);
