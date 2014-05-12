@@ -20,7 +20,7 @@ class QHarmonicProcessor : public QObject
 {
     Q_OBJECT
 public:
-    explicit QHarmonicProcessor(QObject *parent = 0, quint32 length_of_data = 1024, quint32 length_of_buffer = 1024);
+    explicit QHarmonicProcessor(QObject *parent = 0, quint32 length_of_data = 512, quint32 length_of_buffer = 512);
     ~QHarmonicProcessor();
 
 signals:

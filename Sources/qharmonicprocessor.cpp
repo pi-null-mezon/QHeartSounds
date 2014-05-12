@@ -102,7 +102,7 @@ qreal QHarmonicProcessor::ComputeFrequency()
 
     for(quint32 i = 0; i < bufferlength/2 + 1; i++)
     {
-        ptAmplitudeSpectrum[i] = ptSpectrum[i][0]*ptSpectrum[i][0] + ptSpectrum[i][1]*ptSpectrum[i][1];
+        ptAmplitudeSpectrum[i] = (ptSpectrum[i][0]*ptSpectrum[i][0] + ptSpectrum[i][1]*ptSpectrum[i][1])/3000;
     }
     emit SpectrumWasUpdated(ptAmplitudeSpectrum,bufferlength/2);
 

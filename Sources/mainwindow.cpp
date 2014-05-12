@@ -123,7 +123,7 @@ void MainWindow::open_volume_dialog()
 
 int MainWindow::start_new_record()
 {
-    m_timer.stop();
+    this->pause_soundprocessor();
 
     if(pt_harmonicprocessor)
     {
@@ -141,7 +141,7 @@ int MainWindow::start_new_record()
         return -1;//error - can not open audio device for some reasons
     }
 
-    m_timer.start();
+    this->resume_soundprocessor();
     return 0;//success code
 }
 

@@ -34,11 +34,25 @@ void QSoundProcessor::set_format(quint16 sample_rate, quint16 channel_count, qui
     }
 }
 
+void QSoundProcessor::set_format()
+{
+    if (!m_device_info.isFormatSupported(m_format))
+    {
+        qWarning() << "Default format not supported, trying to use the nearest.";
+        m_format = m_device_info.nearestFormat(m_format);
+        qWarning() << "nearest samplerate = " << m_format.sampleRate();
+        qWarning() << "nearest samplesize = " << m_format.sampleSize();
+        qWarning() << "nearest channelcount = " << m_format.channelCount();
+        qWarning() << "nearest byteorder = " << m_format.byteOrder();
+        qWarning() << "nearest sampletype = " << m_format.sampleType();
+    }
+}
+
 bool QSoundProcessor::open_device_select_dialog()
 {
     QDialog dialog;
     dialog.setFixedSize(320,120);
-    dialog.setWindowTitle(tr("Device select dialog"));
+    dialog.setWindowTitle(tr("Audio device"));
 
     QVBoxLayout Lcenter;
         QHBoxLayout Lbuttons;
@@ -80,6 +94,52 @@ bool QSoundProcessor::open_device_select_dialog()
 
 bool QSoundProcessor::open_format_dialog()
 {
+    QDialog dialog;
+    dialog.setWindowTitle(tr("Audio format"));
+    dialog.setFixedSize(256,256);
+
+    QVBoxLayout central_layout;
+    central_layout.setMargin(5);
+
+    QHBoxLayout L_buttons;
+    QPushButton B_apply(tr("Apply"));
+    B_apply.setToolTip(tr("Apply format"));
+    connect(&B_apply, SIGNAL(clicked()), &dialog, SLOT(accept()));
+    QPushButton B_check(tr("Check"));
+    B_check.setToolTip(tr("Check format and set nearest if unsupported"));
+    connect(&B_check, SIGNAL(clicked()), this, SLOT(set_format());
+    QPushButton B_cancel(tr("Cancel"));
+    B_cancel.setToolTip(tr("Close dialog without save"));
+    connect(B_cancel, SIGNAL(clicked()), &dialog, SLOT(reject()));
+    L_buttons.addWidget(&B_apply);
+    L_buttons.addWidget(&B_check);
+    L_buttons.addWidget(&B_cancel);
+
+    QTabWidget TW_controls;
+    QWidget Sample_page;
+        QComboBox CB_sample_rate;
+        for(quint8 i = 1; i < 6; i++)
+        {
+            CB_sample_rate.addItem(QString::number(i*8000));
+        }
+
+
+    central
+
+
+
+
+
+    /*
+    m_format.setSampleRate(sample_rate);
+    m_format.setChannelCount(channel_count);
+    m_format.setSampleSize(sample_size);
+    m_format.setCodec(codec_name);
+    m_format.setByteOrder(byte_order);
+    m_format.setSampleType(sample_type);
+    */
+
+
 
     return false;
 }
@@ -196,7 +256,7 @@ void QSoundProcessor::set_volume(int value)
 void QSoundProcessor::open_volume_dialog()
 {
     QDialog dialog;
-    dialog.setWindowTitle(tr("Volume select dialog"));
+    dialog.setWindowTitle(tr("Volume level"));
     dialog.setFixedSize(160,80);
 
     QVBoxLayout Lcenter;
@@ -207,7 +267,7 @@ void QSoundProcessor::open_volume_dialog()
     slider.setRange(1, VOLUME_STEPS);
     slider.setTickInterval(10);
     slider.setTickPosition(QSlider::TicksBothSides);
-    QLabel lable("error");
+    QLabel lable(tr("error"));
     connect(&slider, SIGNAL(valueChanged(int)), &lable, SLOT(setNum(int)));
     if(pt_audioinput)
     {

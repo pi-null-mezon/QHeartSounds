@@ -31,6 +31,7 @@ public slots:
     bool pause(); //suspend audio data capture
     bool resume();//resume audio data capture with current settings
     void set_format(quint16 sample_rate, quint16 channel_count, quint16 sample_size, const QString& codec_name, QAudioFormat::Endian byte_order, QAudioFormat::SampleType sample_type);
+    void set_format();
     bool open_format_dialog();//TO DO...
     void set_volume(int value);
     void dataReady();

@@ -53,6 +53,10 @@ private:
     bool draw_ByteArray_flag;
     bool draw_Data_flag;
     bool unsigned_flag;
+
+    QColor caption_color;
+    QColor text_color;
+    QColor background_color;
 };
 
 #endif // QPLOT_H

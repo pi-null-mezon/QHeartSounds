@@ -18,14 +18,15 @@ QPlot::QPlot(QWidget *parent, QString caption, bool BA_flag, bool D_flag) :
     Data_length(0),
     unsigned_flag(false)
 {
+    caption_color.setRgb(225,225,225);
+    background_color.setRgb(70,70,70);
+    text_color.setRgb(255,255,255);
 }
 
 void QPlot::paintEvent(QPaintEvent* /*event*/)
 {
     QPainter painter(this);
     draw_coordinate_system(painter);
-    draw_caption(painter);
-    draw_string(painter);
     if(draw_ByteArray_flag)
     {
         draw_ByteArray(painter);
@@ -34,17 +35,19 @@ void QPlot::paintEvent(QPaintEvent* /*event*/)
     {
         draw_Data(painter);
     }
+    draw_caption(painter);
+    draw_string(painter);
 }
 
 void QPlot::draw_coordinate_system(QPainter &painter)
 {
     //Pen settings
     QPen pen(QBrush(Qt::NoBrush),1.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-    pen.setColor(QColor(225,225,225));
+    pen.setColor(caption_color);
     painter.setPen(pen);
 
     //Drawing operations
-    painter.fillRect(this->rect(),QColor(75,75,75));
+    painter.fillRect(this->rect(),background_color);
     painter.drawLine(0, this->rect().height()/2, this->rect().width(), this->rect().height()/2);
 }
 
@@ -81,6 +84,7 @@ void QPlot::read_ByteArray(const QByteArray &data)
 void QPlot::draw_caption(QPainter &painter)
 {
     //Font settings
+    painter.setPen(caption_color);
     QFont font("Tahoma", 10.0, QFont::Bold);
     painter.setFont(font);
 
@@ -91,7 +95,7 @@ void QPlot::draw_caption(QPainter &painter)
 void QPlot::draw_string(QPainter &painter)
 {
     //Font settings
-    painter.setPen(QColor(200,0,0));
+    painter.setPen(text_color);
     QFont font("Tahoma", 10.0, QFont::DemiBold);
     painter.setFont(font);
 
@@ -131,13 +135,13 @@ void QPlot::draw_Data(QPainter &painter)
     if(pt_Data != NULL)
     {
         //Pen settings
-        QPen pen(QBrush(Qt::NoBrush), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-        pen.setColor(QColor(255,255,0));
+        QPen pen(QBrush(Qt::NoBrush), 1.2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        pen.setColor(QColor(255,0,0));
         painter.setPen(pen);
 
         //Drawing operations
         qreal st_X = (qreal)this->rect().width() / Data_length;
-        qreal st_Y = (qreal)this->rect().height() / 100;
+        qreal st_Y = (qreal)this->rect().height() / 20;
 
         qint32 Y0 = this->rect().height()/2;
         if(unsigned_flag)
