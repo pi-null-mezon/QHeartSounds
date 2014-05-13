@@ -22,15 +22,15 @@ public:
     ~MainWindow();
 
 public slots:
-    bool open_soundprocessor();
-    void pause_soundprocessor();
-    void resume_soundprocessor();
-    bool close_soundprocessor();
+    bool open_device();
+    void pause_device();
+    void resume_device();
+    bool close_device();
     void open_volume_dialog();
     int start_new_record();
-    void ontimer();
+    void about_dialog();
 
-private:
+private:  
     void contextMenuEvent(QContextMenuEvent *event);
     QWidget *pt_placeholder;
     QVBoxLayout *pt_main_layout;
@@ -45,6 +45,7 @@ private:
     QAction *pt_action_resume;
     QAction *pt_action_close;
     QAction *pt_action_newRecord;
+    QAction *pt_action_about;
     QSoundProcessor *pt_sound_device;
     QHarmonicProcessor *pt_harmonicprocessor;
     QTimer m_timer;

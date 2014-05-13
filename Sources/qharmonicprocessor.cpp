@@ -146,10 +146,11 @@ qreal QHarmonicProcessor::ComputeFrequency()
                 power_of_first_harmonic += ptAmplitudeSpectrum[i];
                 power_multiplyed_by_index += i * ptAmplitudeSpectrum[i];
             }
-            current_freq_estimation = (power_multiplyed_by_index / power_of_first_harmonic) * 60000 / buffer_duration;
+            current_freq_estimation = (power_multiplyed_by_index / power_of_first_harmonic) * 60000 / buffer_duration;            
          }
      }
      fftw_destroy_plan(p);
+     emit FrequencyWasComputed(current_freq_estimation, SNRE);
      return current_freq_estimation;
 }
 

@@ -394,7 +394,7 @@ void QSoundProcessor::dataReady()
                << ", " << "elapsedUSecs = " << pt_audioinput->elapsedUSecs()
                << ", " << "processedUSecs = " << pt_audioinput->processedUSecs();
 
-    emit readyToRead(pt_buffer->data(),(pt_audioinput->processedUSecs()- processed_milliseconds)/1000); //time in ms format
+    emit readyToBeRead(pt_buffer->data(),(pt_audioinput->processedUSecs() - processed_milliseconds)/1000); //time in ms format
     processed_milliseconds = pt_audioinput->processedUSecs();
 
     pt_buffer->reset();

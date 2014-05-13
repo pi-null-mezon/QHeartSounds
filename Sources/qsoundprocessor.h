@@ -19,7 +19,7 @@ public:
     explicit QSoundProcessor(QObject *parent = 0);   
 
 signals:
-    void readyToRead(const QByteArray& value, qreal duration);
+    void readyToBeRead(const QByteArray& value, qreal duration);
 
 public slots:
     bool open_device_select_dialog();

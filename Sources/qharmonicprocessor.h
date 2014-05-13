@@ -26,6 +26,7 @@ public:
 signals:
     void SignalWasUpdated(const qreal *pointer_to_data, quint32 length_of_data);
     void SpectrumWasUpdated(const qreal *pointer_to_data, quint32 length_of_data);
+    void FrequencyWasComputed(qreal frequency_value, qreal snre_value);
 
 public slots:
     void  ReadBuffer16(const QByteArray &buffer, qreal time);//should be used only for 16 bit sample rate with QAudioFormat::LittleEndian, time should be in ms
