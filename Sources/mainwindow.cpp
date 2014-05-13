@@ -108,6 +108,7 @@ void MainWindow::resume_soundprocessor()
 bool MainWindow::open_soundprocessor()
 {
     pt_sound_device->open_device_select_dialog();
+    pt_sound_device->open_format_dialog();
     return pt_sound_device->open();
 }
 

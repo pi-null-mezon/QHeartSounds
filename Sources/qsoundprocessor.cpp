@@ -2,7 +2,8 @@
 
 #define DEFAULT_SAMPLE_RATE 8000    // in Hz
 #define DEFAULT_CHANNEL_COUNT 1
-#define DEFAULT_SAMPLE_SIZE 8      //bits in a sample
+#define DEFAULT_SAMPLE_SIZE 16      //bits in a sample
+#define VOLUME_STEPS 100
 
 QSoundProcessor::QSoundProcessor(QObject *parent) :
     QObject(parent)
@@ -11,7 +12,7 @@ QSoundProcessor::QSoundProcessor(QObject *parent) :
     pt_audioinput = NULL;
     pt_buffer = NULL;
     m_device_info = QAudioDeviceInfo::defaultInputDevice();
-    this->set_format(DEFAULT_SAMPLE_RATE, DEFAULT_CHANNEL_COUNT, 2*DEFAULT_SAMPLE_SIZE, QString("audio/pcm"), QAudioFormat::LittleEndian, QAudioFormat::SignedInt);
+    this->set_default_format();
 }
 
 void QSoundProcessor::set_format(quint16 sample_rate, quint16 channel_count, quint16 sample_size, const QString& codec_name, QAudioFormat::Endian byte_order, QAudioFormat::SampleType sample_type)
@@ -24,7 +25,7 @@ void QSoundProcessor::set_format(quint16 sample_rate, quint16 channel_count, qui
     m_format.setSampleType(sample_type);
     if (!m_device_info.isFormatSupported(m_format))
     {
-        qWarning() << "Default format not supported, trying to use the nearest.";
+        qWarning() << "Current audio device does not support this format, trying to use the nearest";
         m_format = m_device_info.nearestFormat(m_format);
         qWarning() << "nearest samplerate = " << m_format.sampleRate();
         qWarning() << "nearest samplesize = " << m_format.sampleSize();
@@ -34,18 +35,9 @@ void QSoundProcessor::set_format(quint16 sample_rate, quint16 channel_count, qui
     }
 }
 
-void QSoundProcessor::set_format()
+void QSoundProcessor::set_default_format()
 {
-    if (!m_device_info.isFormatSupported(m_format))
-    {
-        qWarning() << "Default format not supported, trying to use the nearest.";
-        m_format = m_device_info.nearestFormat(m_format);
-        qWarning() << "nearest samplerate = " << m_format.sampleRate();
-        qWarning() << "nearest samplesize = " << m_format.sampleSize();
-        qWarning() << "nearest channelcount = " << m_format.channelCount();
-        qWarning() << "nearest byteorder = " << m_format.byteOrder();
-        qWarning() << "nearest sampletype = " << m_format.sampleType();
-    }
+    this->set_format(DEFAULT_SAMPLE_RATE, DEFAULT_CHANNEL_COUNT, DEFAULT_SAMPLE_SIZE, QString("audio/pcm"), QAudioFormat::LittleEndian, QAudioFormat::SignedInt);
 }
 
 bool QSoundProcessor::open_device_select_dialog()
@@ -105,14 +97,15 @@ bool QSoundProcessor::open_format_dialog()
     QPushButton B_apply(tr("Apply"));
     B_apply.setToolTip(tr("Apply format"));
     connect(&B_apply, SIGNAL(clicked()), &dialog, SLOT(accept()));
-    QPushButton B_check(tr("Check"));
-    B_check.setToolTip(tr("Check format and set nearest if unsupported"));
-    connect(&B_check, SIGNAL(clicked()), this, SLOT(set_format());
+    QPushButton B_default(tr("Default"));
+    B_default.setToolTip(tr("Set default values and close dialog"));
+    connect(&B_default, SIGNAL(clicked()), this, SLOT(set_default_format()));
+    connect(&B_default, SIGNAL(clicked()), &dialog, SLOT(reject()));
     QPushButton B_cancel(tr("Cancel"));
     B_cancel.setToolTip(tr("Close dialog without save"));
-    connect(B_cancel, SIGNAL(clicked()), &dialog, SLOT(reject()));
+    connect(&B_cancel, SIGNAL(clicked()), &dialog, SLOT(reject()));
     L_buttons.addWidget(&B_apply);
-    L_buttons.addWidget(&B_check);
+    L_buttons.addWidget(&B_default);
     L_buttons.addWidget(&B_cancel);
 
     QTabWidget TW_controls;
@@ -125,11 +118,11 @@ bool QSoundProcessor::open_format_dialog()
             GB_samplerate.setTitle(tr("Sample rate"));
             QVBoxLayout L_samplerate;
             QComboBox CB_samplerate;
-            for(quint8 i = 0; i < 5; i++)
-            {
-                CB_samplerate.addItem( QString::number((i+1)*DEFAULT_SAMPLE_RATE) );
-            }
-            connect(&CB_samplerate, SIGNAL(currentIndexChanged(int)), this, SLOT(set_format_samplerate(int)));
+                QList<int> samplerate = m_device_info.supportedSampleRates();
+                for(int i = 0; i < samplerate.size(); i++)
+                {
+                    CB_samplerate.addItem( QString::number(samplerate.at(i)), qVariantFromValue(samplerate.at(i)) );
+                }
             L_samplerate.addWidget(&CB_samplerate);
             GB_samplerate.setLayout(&L_samplerate);
 
@@ -137,15 +130,70 @@ bool QSoundProcessor::open_format_dialog()
             GB_samplesize.setTitle(tr("Sample size"));
             QVBoxLayout L_samplesize;
             QComboBox CB_samplesize;
-            for(quint8 i = 0; i < 4; i++)
-            {
-                CB_samplesize.addItem( QString::number( (i+1)*DEFAULT_SAMPLE_SIZE ) );
-            }
+                QList<int> samplesize = m_device_info.supportedSampleSizes();
+                for(int i = 0; i < samplesize.size(); i++)
+                {
+                    CB_samplesize.addItem( QString::number(samplesize.at(i)) , qVariantFromValue(samplesize.at(i)) );
+                }
             L_samplesize.addWidget(&CB_samplesize);
             GB_samplesize.setLayout(&L_samplesize);
 
+            QGroupBox GB_byteorder;
+            GB_byteorder.setTitle(tr("Byte order"));
+            QVBoxLayout L_byteorder;
+            QComboBox CB_byteorder;
+            QList<QAudioFormat::Endian> byteorder = m_device_info.supportedByteOrders();
+                for(int i = 0; i < byteorder.size(); i++)
+                {
+                    switch (byteorder.at(i))
+                    {
+                        case 0:
+                            CB_byteorder.addItem( "BigEndian" , qVariantFromValue(byteorder.at(i)) );
+                            break;
+                        case 1:
+                            CB_byteorder.addItem( "LittleEndian" , qVariantFromValue(byteorder.at(i)) );
+                            break;
+                        default:
+                            CB_byteorder.addItem( QString::number(byteorder.at(i)) , qVariantFromValue(byteorder.at(i)) );
+                            break;
+                    }
+                }
+            L_byteorder.addWidget(&CB_byteorder);
+            GB_byteorder.setLayout(&L_byteorder);
+
+            QGroupBox GB_sampletype;
+            GB_sampletype.setTitle(tr("Sample type"));
+            QVBoxLayout L_sampletype;
+            QComboBox CB_sampletype;
+            QList<QAudioFormat::SampleType> sampletype = m_device_info.supportedSampleTypes();
+                for(int i = 0; i < sampletype.size(); i++)
+                {
+                    switch (sampletype.at(i))
+                    {
+                        case 0:
+                            CB_sampletype.addItem( "Unknown", qVariantFromValue(sampletype.at(i)) );
+                            break;
+                        case 1:
+                            CB_sampletype.addItem( "SignedInt", qVariantFromValue(sampletype.at(i)) );
+                            break;
+                        case 2:
+                            CB_sampletype.addItem( "UnSignedInt", qVariantFromValue(sampletype.at(i)) );
+                            break;
+                        case 3:
+                            CB_sampletype.addItem( "Float", qVariantFromValue(sampletype.at(i)) );
+                            break;
+                        default:
+                            CB_sampletype.addItem( QString::number(sampletype.at(i)), qVariantFromValue(sampletype.at(i)) );
+                            break;
+                    }
+                }
+            L_sampletype.addWidget(&CB_sampletype);
+            GB_sampletype.setLayout(&L_sampletype);
+
         L_sampleproperties.addWidget(&GB_samplerate);
         L_sampleproperties.addWidget(&GB_samplesize);
+        L_sampleproperties.addWidget(&GB_byteorder);
+        L_sampleproperties.addWidget(&GB_sampletype);
     Sampleproperties_page.setLayout(&L_sampleproperties);
 
     QWidget Otherproperties_page;
@@ -157,32 +205,43 @@ bool QSoundProcessor::open_format_dialog()
             GB_channelcount.setTitle(tr("Channels count"));
             QVBoxLayout L_channelcount;
             QComboBox CB_channelcount;
-            for(quint8 i = 0; i < 4; i++)
-            {
-                CB_channelcount.addItem( QString::number(i+1) );
-            }
+                QList<int> channels = m_device_info.supportedChannelCounts();
+                for(int i = 0; i < channels.size(); i++)
+                {
+                    CB_channelcount.addItem( QString::number(channels.at(i)), qVariantFromValue(channels.at(i)) );
+                }
             L_channelcount.addWidget(&CB_channelcount);
             GB_channelcount.setLayout(&L_channelcount);
 
+            QGroupBox GB_codecname;
+            GB_codecname.setTitle(tr("Audio codec"));
+            QVBoxLayout L_codecname;
+            QComboBox CB_codecname;
+            CB_codecname.addItems( m_device_info.supportedCodecs());
+            L_codecname.addWidget(&CB_codecname);
+            GB_codecname.setLayout(&L_codecname);
+
         L_otherproperties.addWidget(&GB_channelcount);
+        L_otherproperties.addWidget(&GB_codecname);
     Otherproperties_page.setLayout(&L_otherproperties);
 
 
-    TW_controls.addTab(&Sample_properties_page, tr("Sample"));
+    TW_controls.addTab(&Sampleproperties_page, tr("Sample"));
     TW_controls.addTab(&Otherproperties_page, tr("Channels/codec"));
+    central_layout.addWidget(&TW_controls);
+    central_layout.addLayout(&L_buttons);
+    dialog.setLayout(&central_layout);
 
-
-    /*
-    m_format.setSampleRate(sample_rate); // ok
-    m_format.setChannelCount(channel_count); //ok
-    m_format.setSampleSize(sample_size); //ok
-    m_format.setCodec(codec_name);
-    m_format.setByteOrder(byte_order);
-    m_format.setSampleType(sample_type);
-    */
-
-
-
+    if(dialog.exec() == QDialog::Accepted)
+    {
+        this->set_format_samplerate( CB_samplerate.currentData().value<int>() );
+        this->set_format_samplesize( CB_samplesize.currentData().value<int>() );
+        this->set_format_byteorder( CB_byteorder.currentData().value<QAudioFormat::Endian>() );
+        this->set_format_sampletype( CB_sampletype.currentData().value<QAudioFormat::SampleType>() );
+        this->set_format_channelcount( CB_channelcount.currentData().value<int>() );
+        this->set_format_codecname( CB_codecname.currentText() );
+        return true;
+    }
     return false;
 }
 
@@ -198,6 +257,11 @@ bool QSoundProcessor::open()
         pt_audioinput->start(pt_buffer);
         qWarning() << "current buffersize = " << pt_audioinput->bufferSize();
         qWarning() << "current notifyinterval = " << pt_audioinput->notifyInterval() << " ms";
+        qWarning() << "current  samplerate = " << m_format.sampleRate();
+        qWarning() << "current  samplesize = " << m_format.sampleSize();
+        qWarning() << "current  channelcount = " << m_format.channelCount();
+        qWarning() << "current  byteorder = " << m_format.byteOrder();
+        qWarning() << "current  sampletype = " << m_format.sampleType();
         return true;
     }
     return false;
@@ -258,7 +322,7 @@ bool QSoundProcessor::resume()
 //-----------------------------------------------------------------------------
 void QSoundProcessor::set_format_samplerate(int value)
 {
-    m_format.setSampleRate((value + 1)*DEFAULT_SAMPLE_RATE );
+    m_format.setSampleRate( value );
 }
 
 void QSoundProcessor::set_format_channelcount(int value)

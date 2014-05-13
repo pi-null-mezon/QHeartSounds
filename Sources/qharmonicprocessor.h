@@ -10,7 +10,7 @@
 #include <QObject>
 #include "fftw3.h"
 
-#define LOWER_HR_LIMIT 5 // in s^-1, it is 300 bpm
+#define LOWER_HR_LIMIT 4 // in s^-1, it is 240 bpm
 #define SNR_TRESHOLD -1.0 // in most cases this value is suitable when (bufferlength == 256)
 #define HALF_INTERVAL 5 // defines the number of averaging indexes when frequency is evaluated, this value should be >= 1
 #define STROBE_FACTOR 80 // defines how much raw counts represents one count in output data, in another words it is frequency divider

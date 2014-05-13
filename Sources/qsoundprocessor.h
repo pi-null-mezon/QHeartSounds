@@ -12,8 +12,6 @@
 #include <QLabel>
 #include <QDebug>
 
-#define VOLUME_STEPS 100
-
 class QSoundProcessor : public QObject
 {
     Q_OBJECT
@@ -31,11 +29,11 @@ public slots:
     bool pause(); //suspend audio data capture
     bool resume();//resume audio data capture with current settings
     void set_format(quint16 sample_rate, quint16 channel_count, quint16 sample_size, const QString& codec_name, QAudioFormat::Endian byte_order, QAudioFormat::SampleType sample_type);
-    void set_format();
-    bool open_format_dialog();//TO DO...
+    bool open_format_dialog();//Works with current m_device_info instance, thus in most cases should be called after open_device_select_dialog()
     void set_volume(int value);
     void dataReady();
     void open_volume_dialog();
+    void set_default_format();
 
 private:
     QAudioFormat m_format;
