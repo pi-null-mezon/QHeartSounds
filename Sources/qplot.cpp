@@ -166,7 +166,7 @@ void QPlot::draw_Data(QPainter &painter)
     if(pt_Data != NULL)
     {
         //Pen settings
-        QPen pen(QBrush(Qt::NoBrush), 1.2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        QPen pen(QBrush(Qt::NoBrush), 1.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
         pen.setColor(QColor(255,0,0));
         painter.setPen(pen);
 
@@ -190,7 +190,7 @@ void QPlot::draw_Data(QPainter &painter)
         if(unsigned_flag)
         {
             path.lineTo( st_X*(Data_length-1), Y0 ); // for right view of the plot of spectrum
-            painter.fillPath(path, QBrush(QColor(0,115,195)));
+            painter.fillPath(path, QBrush(QColor(0,145,225)));
         }
         else
         {

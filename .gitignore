@@ -3,11 +3,12 @@
 *.lo
 *.o
 *.obj
-
-# Compiled Dynamic libraries
-
-# Compiled Static libraries
-
 # Executables
 *.exe
+# Qt creator .pro.user files
+*.pro.user
+# Installs exclude
+Installs/**
+
+ 
 

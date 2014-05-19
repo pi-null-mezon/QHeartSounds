@@ -26,8 +26,12 @@ HEADERS  += mainwindow.h \
     qsoundprocessor.h \
     qharmonicprocessor.h
 
+RC_ICONS = $$PWD/../Resources/images/QHeartSounds.ico
+
+win32-g++: DEFINES += MINGW_COMPILER
+
 #------------MANUAL_CHOOSE_THE_PLATFORM_TO_COMPILE----------------------
-#This option is managed automatically when you chose the Kit for compilation
+#This option is managed automatically when you chose the Kit for compilation, manual settings are listed below
 #win32-msvc*:QMAKE_TARGET.arch = x86_64
 #win32-msvc*:QMAKE_TARGET.arch = $$QMAKE_HOST.arch
 

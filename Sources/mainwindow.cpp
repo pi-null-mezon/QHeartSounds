@@ -59,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //-----------Menus------------------
     pt_menu_main = this->menuBar()->addMenu(tr("&Menu"));
-    pt_menu_main->addAction(pt_action_newRecord);
+    //pt_menu_main->addAction(pt_action_newRecord);
     pt_menu_main->addAction(pt_action_about);
     pt_menu_main->addSeparator();
     pt_menu_main->addAction(pt_action_exit);

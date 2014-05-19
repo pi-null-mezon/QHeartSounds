@@ -1,5 +1,9 @@
 #include "qharmonicprocessor.h"
 
+#ifdef MINGW_COMPILER
+#include <cmath>
+#endif
+
 QHarmonicProcessor::QHarmonicProcessor(QObject *parent, quint32 length_of_data, quint32 length_of_buffer) :
                     QObject(parent),
                     datalength(length_of_data),
