@@ -74,7 +74,7 @@ bool QSoundProcessor::open_device_select_dialog()
 
     if(dialog.exec() == QDialog::Accepted)
     {
-        m_device_info = CBdevice.itemData(CBdevice.currentIndex()).value<QAudioDeviceInfo>();
+        m_device_info = CBdevice.currentData().value<QAudioDeviceInfo>();
         return true;
     }
     else

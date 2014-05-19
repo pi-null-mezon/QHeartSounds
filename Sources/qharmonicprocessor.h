@@ -22,6 +22,8 @@ class QHarmonicProcessor : public QObject
 public:
     explicit QHarmonicProcessor(QObject *parent = 0, quint32 length_of_data = 512, quint32 length_of_buffer = 512);
     ~QHarmonicProcessor();
+    quint32 get_datalength() const;
+    quint32 get_bufferlength() const;
 
 signals:
     void SignalWasUpdated(const qreal *pointer_to_data, quint32 length_of_data);
@@ -31,7 +33,7 @@ signals:
 public slots:
     void  ReadBuffer16(const QByteArray &buffer, qreal time);//should be used only for 16 bit sample rate with QAudioFormat::LittleEndian, time should be in ms
     qreal ComputeFrequency();
-    qreal getSNRE();
+    qreal get_SNRE() const;
 
 private:
     qreal *ptData_channel1; //a pointer to spattialy averaged data (you should use it to write data to an instance of a class)

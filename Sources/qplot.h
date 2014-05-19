@@ -31,6 +31,7 @@ public slots:
 
     void set_caption(const QString &new_name);
     void set_string(const QString &string);
+    void set_extrastring(const QString &string);
     void set_draw_ByteArray_flag(bool value);
     void set_draw_Data_flag(bool value);
     void set_unsigned(bool value);    

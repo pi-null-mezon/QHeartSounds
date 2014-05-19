@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //-----------------------------------------
     pt_harmonicprocessor = NULL;
-    this->statusBar()->showMessage(tr("A context menu is available by right-clicking"));
+    this->statusBar()->showMessage(tr("A context menu is available by right clicking"));
     this->resize(WINDOW_WIDTH, WINDOW_HEIGHT);
     //statusBar()->showMessage(QString::number((qint16)0xFFFF*16,10));
 }
@@ -148,6 +148,9 @@ int MainWindow::start_new_record()
     connect(pt_harmonicprocessor, SIGNAL(SpectrumWasUpdated(const qreal*,quint32)), pt_spectrum_plot, SLOT(read_Data(const qreal*,quint32)));
     connect(&m_timer, SIGNAL(timeout()), pt_harmonicprocessor, SLOT(ComputeFrequency()));
     connect(pt_harmonicprocessor, SIGNAL(FrequencyWasComputed(qreal,qreal)), pt_spectrum_plot, SLOT(take_frequency(qreal,qreal)));
+
+    pt_record_plot->set_string( "data: " + QString::number(pt_harmonicprocessor->get_datalength()) );
+    pt_record_plot->set_extrastring( "buffer: " + QString::number(pt_harmonicprocessor->get_bufferlength()));
 
     this->resume_device();
     return 0;//success code

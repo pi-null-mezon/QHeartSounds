@@ -102,9 +102,9 @@ qreal QHarmonicProcessor::ComputeFrequency()
 
     for(quint32 i = 0; i < bufferlength/2 + 1; i++)
     {
-        ptAmplitudeSpectrum[i] = (ptSpectrum[i][0]*ptSpectrum[i][0] + ptSpectrum[i][1]*ptSpectrum[i][1])/3000;
+        ptAmplitudeSpectrum[i] = (ptSpectrum[i][0]*ptSpectrum[i][0] + ptSpectrum[i][1]*ptSpectrum[i][1])/1000;
     }
-    emit SpectrumWasUpdated(ptAmplitudeSpectrum,bufferlength/2);
+    emit SpectrumWasUpdated(ptAmplitudeSpectrum,bufferlength/2 + 1);
 
     //position of max harmonic searching
     quint32 lower_bound = (quint32)(LOWER_HR_LIMIT * buffer_duration / 1000); //You should ensure that ( LOW_HR_LIMIT < discretization frequency / 2 )
@@ -154,8 +154,18 @@ qreal QHarmonicProcessor::ComputeFrequency()
      return current_freq_estimation;
 }
 
-qreal QHarmonicProcessor::getSNRE()
+qreal QHarmonicProcessor::get_SNRE() const
 {
     return SNRE;
+}
+
+quint32 QHarmonicProcessor::get_datalength() const
+{
+    return datalength;
+}
+
+quint32 QHarmonicProcessor::get_bufferlength() const
+{
+    return bufferlength;
 }
 

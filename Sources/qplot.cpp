@@ -23,7 +23,7 @@ QPlot::QPlot(QWidget *parent, QString caption, bool BA_flag, bool D_flag) :
 {
     caption_color.setRgb(225,225,225);
     background_color.setRgb(75,75,75);
-    string_color.setRgb(135,135,135);
+    string_color.setRgb(225,225,225);
 }
 
 void QPlot::paintEvent(QPaintEvent* /*event*/)
@@ -58,7 +58,7 @@ void QPlot::draw_coordinate_system(QPainter &painter)
         painter.drawLine(0, i*h_step, width(), i*h_step);
     }
     qreal v_step = (qreal)rect().width()/VERTICAL_TICKS;
-    for(int i = 1 ; i < VERTICAL_TICKS; i++)
+    for(int i = 1 ; i < VERTICAL_TICKS ; i++)
     {
         painter.drawLine(i*v_step, 0, i*v_step, height());
     }
@@ -122,15 +122,15 @@ void QPlot::draw_strings(QPainter &painter)
 {
     //Font settings
     painter.setPen(string_color);
-    QFont font("Tahoma", 18.0, QFont::Bold);
+    QFont font("Tahoma", 15.0, QFont::Bold);
     painter.setFont(font);
 
+    qreal shift = 4.0 * rect().width() / 5.0;
+
     //Drawing operations
-    painter.drawText(this->rect().width() - m_string.length()*font.pointSize(), 1.5*font.pointSize()+5, m_string);
-
-    painter.setPen(QColor(135,135,135));
-    painter.drawText(this->rect().width() - m_string.length()*font.pointSize(), 3.0*font.pointSize()+5, m_extrastring);
-
+    painter.drawText(shift, 1.0*font.pointSize()+5, m_string);
+    painter.setPen(QColor(225,225,225));
+    painter.drawText(shift, 2.5*font.pointSize()+5, m_extrastring);
 }
 
 void QPlot::set_caption(const QString &new_name)
@@ -172,7 +172,7 @@ void QPlot::draw_Data(QPainter &painter)
 
         //Drawing operations
         qreal st_X = (qreal)this->rect().width() / Data_length;
-        qreal st_Y = (qreal)this->rect().height() / 20;
+        qreal st_Y = (qreal)this->rect().height() / 10;
 
         qint32 Y0 = this->rect().height()/2;
         if(unsigned_flag)
@@ -186,7 +186,16 @@ void QPlot::draw_Data(QPainter &painter)
         {
             path.lineTo(st_X*i, Y0 - st_Y*pt_Data[i]);
         }
-        painter.drawPath(path);
+
+        if(unsigned_flag)
+        {
+            path.lineTo( st_X*(Data_length-1), Y0 ); // for right view of the plot of spectrum
+            painter.fillPath(path, QBrush(QColor(0,115,195)));
+        }
+        else
+        {
+            painter.drawPath(path);
+        }
     }
 }
 
@@ -201,12 +210,17 @@ void QPlot::take_frequency(qreal frequency_value, qreal snre_value)
     m_extrastring = QString::number(snre_value, 'f', 2) + " dB";
     if(snre_value > 1.0)
     {
-        string_color.setRgb(0,190,0);
+        string_color.setRgb(0,225,0);
     }
     else
     {
-        string_color.setRgb(190,0,0);
+        string_color.setRgb(255,0,0);
     }
     update();
 }
 
+void QPlot::set_extrastring(const QString &string)
+{
+    m_extrastring = string;
+    update();
+}
