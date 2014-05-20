@@ -224,3 +224,8 @@ void QPlot::set_extrastring(const QString &string)
     m_extrastring = string;
     update();
 }
+
+void QPlot::unset_pt_Data()
+{
+    pt_Data = NULL;
+}

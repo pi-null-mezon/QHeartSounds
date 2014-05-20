@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "QHeartSounds"
-#define MyAppVersion "1.0.0.1"
+#define MyAppVersion "1.0.0.2"
 #define MyAppPublisher "pi-null-mezon"
 #define MyAppURL "pi-null-mezon@yandex.ru"
 #define MyAppExeName "HeartSounds.exe"
@@ -51,20 +51,11 @@ Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignor
 Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Declarative.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Multimedia.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5MultimediaQuick_p.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5MultimediaWidgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Network.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5OpenGL.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Script.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5ScriptTools.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Test.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5WebKit.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5WinExtras.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5Xml.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\bin\Qt5XmlPatterns.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.2.1\mingw48_32\plugins\platforms\*"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.2.1\mingw48_32\plugins\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

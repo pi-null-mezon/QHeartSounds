@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 QT += multimedia
 
 TARGET = HeartSounds
+VERSION = 1.0.0.2
 TEMPLATE = app
 
 

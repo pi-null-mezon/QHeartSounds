@@ -131,6 +131,13 @@ void MainWindow::open_volume_dialog()
 int MainWindow::start_new_record()
 {
     this->pause_device();
+
+    //--------------Should prevent start new record bug--------------
+    disconnect(pt_harmonicprocessor,0,0,0);
+    pt_record_plot->unset_pt_Data();
+    pt_spectrum_plot->unset_pt_Data();
+    //---------------------------------------------------------------
+
     if(!this->open_device())
     {
         return -1;//error - can not open audio device for some reasons
@@ -146,8 +153,8 @@ int MainWindow::start_new_record()
     connect(pt_sound_device, SIGNAL(readyToBeRead(QByteArray,qreal)), pt_harmonicprocessor, SLOT(ReadBuffer16(QByteArray,qreal)));
     connect(pt_harmonicprocessor, &QHarmonicProcessor::SignalWasUpdated, pt_record_plot, &QPlot::read_Data);
     connect(pt_harmonicprocessor, SIGNAL(SpectrumWasUpdated(const qreal*,quint32)), pt_spectrum_plot, SLOT(read_Data(const qreal*,quint32)));
-    connect(&m_timer, SIGNAL(timeout()), pt_harmonicprocessor, SLOT(ComputeFrequency()));
     connect(pt_harmonicprocessor, SIGNAL(FrequencyWasComputed(qreal,qreal)), pt_spectrum_plot, SLOT(take_frequency(qreal,qreal)));
+    connect(&m_timer, SIGNAL(timeout()), pt_harmonicprocessor, SLOT(ComputeFrequency()));
 
     pt_record_plot->set_string( "data: " + QString::number(pt_harmonicprocessor->get_datalength()) );
     pt_record_plot->set_extrastring( "buffer: " + QString::number(pt_harmonicprocessor->get_bufferlength()));
@@ -164,7 +171,7 @@ void MainWindow::about_dialog()
 
     QVBoxLayout *templayout = new QVBoxLayout();
     templayout->setMargin(10);
-    QLabel *projectname = new QLabel("QHeartSounds, v.1.0.0.1");
+    QLabel *projectname = new QLabel("QHeartSounds v.1.0.0.2");
     projectname->setAlignment(Qt::AlignCenter);
     projectname->setFrameStyle( QFrame::Box | QFrame::Raised);
     QLabel *projectauthors = new QLabel("Biomedical department of BMSTU\nTaranov Alex\n2014");

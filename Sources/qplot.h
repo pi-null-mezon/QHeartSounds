@@ -36,6 +36,7 @@ public slots:
     void set_draw_Data_flag(bool value);
     void set_unsigned(bool value);    
     void take_frequency(qreal frequency_value, qreal snre_value);
+    void unset_pt_Data();
 
 protected:
     void paintEvent(QPaintEvent* /*event*/);
