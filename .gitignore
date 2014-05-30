@@ -7,8 +7,9 @@
 *.exe
 # Qt creator .pro.user files
 *.pro.user
+*.pro.user*
 # Installs exclude
-Installs/**
+Installs/build*
 
  
 
