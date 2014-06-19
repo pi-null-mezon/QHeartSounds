@@ -49,7 +49,7 @@ win32-msvc*{
       }
 #for MinGW compiller
 win32-g++ {
-        win32-g++:contains(QMAKE_HOST.arch, x86_64):{
+        win32-g++:contains(QMAKE_TARGET.arch, x86_64):{
             message( "Building for 64 bit, MinGW compiller" )
             LIBS += -L$$PWD/../Resources/fftw3-64/ -llibfftw3-3
         } else {
