@@ -254,7 +254,7 @@ bool QSoundProcessor::open()
     if(pt_buffer->open(QIODevice::ReadWrite))
     {
         connect(pt_buffer, SIGNAL(readyRead()), this, SLOT(dataReady()));
-        pt_audioinput->start(pt_buffer);
+        pt_audioinput->start(pt_buffer);        
         qWarning() << "current buffersize = " << pt_audioinput->bufferSize();
         qWarning() << "current notifyinterval = " << pt_audioinput->notifyInterval() << " ms";
         qWarning() << "current  samplerate = " << m_format.sampleRate();
@@ -390,15 +390,19 @@ void QSoundProcessor::open_volume_dialog()
 
 void QSoundProcessor::dataReady()
 {
-    qWarning() << "bytesReady = " << pt_audioinput->bytesReady()
+    qWarning() << "bytesReady = " << pt_buffer->buffer().size()
                << ", " << "elapsedUSecs = " << pt_audioinput->elapsedUSecs()
                << ", " << "processedUSecs = " << pt_audioinput->processedUSecs();
 
-    emit readyToBeRead(pt_buffer->data(),(pt_audioinput->processedUSecs() - processed_milliseconds)/1000); //time in ms format
-    processed_milliseconds = pt_audioinput->processedUSecs();
+    if(pt_buffer->buffer().size() > 5000) {
 
-    pt_buffer->reset();
-    pt_buffer->buffer().clear();
+        emit readyToBeRead(pt_buffer->data(),(pt_audioinput->processedUSecs() - processed_milliseconds)/1000); //time in ms format
+        processed_milliseconds = pt_audioinput->processedUSecs();
+
+        pt_buffer->reset();
+        pt_buffer->buffer().clear();
+    }
+
 }
 
 

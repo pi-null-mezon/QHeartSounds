@@ -1,0 +1,6 @@
+#ifndef QDATASTREAM_H
+#define QDATASTREAM_H
+
+
+
+#endif // QDATASTREAM_H
