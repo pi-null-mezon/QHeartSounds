@@ -13,6 +13,7 @@
 #include <QDateTime>
 
 #include "qconvertsound.h"
+#include "hbdlib.h"
 
 void lowpassfilter(const QVector<qreal> &_vX, QVector<qreal> &_vY, int _samplerate, int _targetsamplerate)
 {

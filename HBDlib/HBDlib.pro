@@ -6,8 +6,11 @@
 CONFIG -= qt
 CONFIG += c++11
 
-TARGET = hdblib
-VERSION = 1.0.0.0
+CONFIG(release, debug|release) {
+    TARGET = hbdlib
+} else {
+    TARGET = hbdlibd
+}
 
 TEMPLATE = lib
 

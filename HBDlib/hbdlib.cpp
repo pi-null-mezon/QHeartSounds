@@ -19,7 +19,7 @@ inline void unpackBytes(const char *_src, int _index, T& _data) {
 }
 
 
-HDBError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, Endianness _sampleendianness, unsigned int _samplerate, std::vector<float> &_vt, std::vector<std::vector<float>> &_vvs)
+HBDError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, Endianness _sampleendianness, unsigned int _samplerate, std::vector<float> &_vt, std::vector<std::vector<float>> &_vvs)
 {
     if(_sampleendianness != LittleEndian) {
         return UnsupportedEndianness;
@@ -30,7 +30,7 @@ HDBError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sa
     unsigned int _framestep = _samplestep*_channels;
     unsigned int _length = _size / _framestep;
     _vt.resize(_length);
-    for(int j = 0; j < _channels; ++j) {
+    for(unsigned int j = 0; j < _channels; ++j) {
         _vvs[j].resize(_length);
     }
 
@@ -38,9 +38,9 @@ HDBError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sa
 
         case SignedInt: {
             int16_t _tmp;
-            for(int i = 0; i < _length; ++i) {
+            for(unsigned int i = 0; i < _length; ++i) {
                 _vt[i] = (float)i/_samplerate;
-                for(int j = 0; j < _channels; ++j) {
+                for(unsigned int j = 0; j < _channels; ++j) {
                     unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
                     _vvs[j][i] = _tmp;
                 }
@@ -49,9 +49,9 @@ HDBError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sa
 
         case Float: {
             float _tmp;
-            for(int i = 0; i < _length; ++i) {
-                _vt[i] = (float)i/_aformat.sampleRate();
-                for(int j = 0; j < _channels; ++j) {
+            for(unsigned int i = 0; i < _length; ++i) {
+                _vt[i] = (float)i/_samplerate;
+                for(unsigned int j = 0; j < _channels; ++j) {
                     unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
                     _vvs[j][i] = _tmp;
                 }
@@ -66,10 +66,28 @@ HDBError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sa
 }
 
 
-bool detectHeartBeating(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, Endianness _sampleendianness, unsigned int _samplerate, HDBError *_error)
-{
+bool detectHeartBeating(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, Endianness _sampleendianness, unsigned int _samplerate, HBDError *_error)
+{   
+    std::vector<float> _vt;
+    std::vector<std::vector<float>> _vvs;
 
+    HBDError _err;
+    float _recordtime_s = (((float)_size/(float)_channels)/(float)_samplesize)/(float)_samplerate;
+    if(_recordtime_s < 4.0) {
+        _err = ShortRecord;
+    } else {
+        _err = unpackSoundRecord(_data,_size,_sampletype,_channels,_samplesize,_sampleendianness,_samplerate,_vt,_vvs);
+    }
 
+    if(_error != 0) {
+        *_error = _err;
+    }
 
+    if(_err != NoError) {
+        return false;
+    }
 
+    // TO DO
+
+    return true;
 }

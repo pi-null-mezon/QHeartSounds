@@ -18,7 +18,7 @@
 /**
  * @brief The HBDError enum is used for errors handling
  */
-enum HBDError {NoError, UnsupportedSmpleType, UnsupportedChannelsNumber, UnsupportedEndianness, UnsupportedSamplerate};
+enum HBDError {NoError, UnsupportedSmpleType, UnsupportedChannelsNumber, UnsupportedEndianness, UnsupportedSamplerate, ShortRecord};
 
 /**
  * @brief The Endianness enum is used for endianness args
@@ -47,7 +47,7 @@ extern "C" DLLSPEC bool searchHBinPCMAudio( const char *_data,
                                             unsigned int _samplesize,
                                             Endianness _sampleendianness,
                                             unsigned int _samplerate,
-                                            HDBError *_error=0 );
+                                            HBDError *_error=0 );
 
 
 #endif // HBDLIB_H
