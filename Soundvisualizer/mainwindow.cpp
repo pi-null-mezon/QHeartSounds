@@ -3,12 +3,14 @@
 
 #include <assert.h>
 
+#include <QDir>
 #include <QLabel>
 #include <QCombobox>
 #include <QGroupBox>
 #include <QDialog>
 #include <QPushButton>
 #include <QSettings>
+#include <QDateTime>
 
 #include "qconvertsound.h"
 
@@ -144,8 +146,6 @@ void MainWindow::readBuffer()
 
         ui->actualbuffersizeLE->setText(QString::number(qbuffer.data().size()));
 
-        static QVector<qreal> _vt;
-        static QVector<QVector<qreal>> _vvs;
         unpackSoundRecord(audioformat,qbuffer.data(),_vt,_vvs);
 
         if(_vvs.size() > 0) {
@@ -187,6 +187,25 @@ void MainWindow::__decommutate()
 void MainWindow::__setupView()
 {
     ui->filterplotW->set_tracePen(QPen(Qt::NoBrush,1.5,Qt::SolidLine),QColor(255,190,0));
+}
+
+void MainWindow::__saveSignalBuffer()
+{
+    if(_vvs.size() > 0) {
+        if(_vvs[0].size() > 0) {
+            QDir _dir(qApp->applicationDirPath());
+            _dir.mkdir("Records");
+            _dir.cd("Records");
+            QFile _file(_dir.absolutePath().append("/%1 (%2).csv").arg(APP_NAME,QDateTime::currentDateTime().toString("hhmmss-ddMMyyyy")));
+            if(_file.open(QFile::WriteOnly)) {
+                _file.write("Time[s],Value\n");
+                for(int i = 0; i < _vvs[0].size(); ++i) {
+                    _file.write(QString("%1,%2\n").arg(QString::number(_vt[i],'f',7),QString::number(_vvs[0][i],'f',0)).toUtf8());
+                }
+                qInfo("Record has been saved");
+            }
+        }
+    }
 }
 
 void MainWindow::__setupAudioInputThread()
@@ -312,4 +331,16 @@ void MainWindow::on_startB_clicked()
 {
     if(qaudioinput)
         qaudioinput->resume();
+}
+
+
+void MainWindow::on_savebufferB_clicked()
+{
+    if(qaudioinput) {
+        if(qaudioinput->state() == QAudio::ActiveState) {
+            qaudioinput->suspend();
+            __saveSignalBuffer();
+            qaudioinput->resume();
+        }
+    }
 }

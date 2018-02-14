@@ -25,12 +25,10 @@ private slots:
     void readBuffer();
     void on_openaudiodevB_clicked();
     void on_audioinputdevCB_currentIndexChanged(int index);
-
     void on_samplerateCB_currentIndexChanged(int index);
-
     void on_pauseB_clicked();
-
     void on_startB_clicked();
+    void on_savebufferB_clicked();
 
 protected:
     void closeEvent(QCloseEvent *_e);
@@ -41,6 +39,7 @@ private:
     void __commutate();
     void __decommutate();
     void __setupView();
+    void __saveSignalBuffer();
     void __setupAudioInputThread();
     void __queryAudioInputDevices();
 
@@ -52,6 +51,9 @@ private:
     QBuffer qbuffer;
     QAudioDeviceInfo audiodevinfo;
     QAudioFormat audioformat;
+
+    QVector<qreal> _vt;
+    QVector<QVector<qreal>> _vvs;
 };
 
 
