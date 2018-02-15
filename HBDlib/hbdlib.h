@@ -1,6 +1,8 @@
 #ifndef HBDLIB_H
 #define HBDLIB_H
 
+#include <vector>
+
 #ifdef HBDLIB_LIBRARY
     #ifdef TARGET_OS_LINUX
         #define DLLSPEC __attribute__((visibility("default")))
@@ -15,10 +17,12 @@
     #endif
 #endif
 
+namespace hbdlib {
+
 /**
  * @brief The HBDError enum is used for errors handling
  */
-enum HBDError {NoError, UnsupportedSmpleType, UnsupportedChannelsNumber, UnsupportedEndianness, UnsupportedSamplerate, ShortRecord};
+enum HBDError {NoError, UnsupportedSmpleType, UnsupportedNumberOfChannels, UnsupportedEndianness, UnsupportedSamplerate, TooShortRecord};
 
 /**
  * @brief The Endianness enum is used for endianness args
@@ -40,14 +44,16 @@ enum SampleType {SignedInt, UnsignedInt, Float};
     * @param *_error - optional parameter that could be helpful for debugging
     * @return true if something heart beating was detected or false otherwise
  */
-extern "C" DLLSPEC bool searchHBinPCMAudio( const char *_data,
+extern "C" DLLSPEC bool searchHBinPCMAudio(const char *_data,
                                             unsigned int _size,
                                             SampleType _sampletype,
                                             unsigned int _channels,
                                             unsigned int _samplesize,
                                             Endianness _sampleendianness,
                                             unsigned int _samplerate,
-                                            HBDError *_error=0 );
+                                            std::vector<float> &_vdebug,
+                                            HBDError *_error=0);
 
+}
 
 #endif // HBDLIB_H

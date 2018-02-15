@@ -4,8 +4,6 @@ Data = csvread(filename,1,0);
 load('lpfe125','ellipticlpf');
 Y = filter(ellipticlpf,Data(:,2));
 S = abs(diff(Y));
-figure
-plot(diff(Y));
 Stdev = std(S);
 S = S / Stdev;
 
@@ -33,7 +31,6 @@ figure('Name',filename)
 hold on
 plot(S);
 plot(Bin);
-hold off
 
 uniformity = measureuniformity(vI);
 display('--------------');

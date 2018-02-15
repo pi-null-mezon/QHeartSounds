@@ -86,7 +86,7 @@ void QEasyPlot::draw_coordinateSystem(QPainter &painter)
     qreal tempCoordinate = widgetYstep;
     for(quint16 i = 1; i < m_YTicks - 1; i++)  {
         painter.drawLine(0, tempCoordinate, width(), tempCoordinate);
-        painter.drawText(m_textMargin, tempCoordinate - m_textMargin, QString::number((m_topBorder - i*m_yStep), 'E', m_coordinatesYPrecision));
+        painter.drawText(m_textMargin, tempCoordinate - m_textMargin, QString::number((m_topBorder - i*m_yStep), 'f', m_coordinatesYPrecision));
         tempCoordinate += widgetYstep;
     }
     tempCoordinate = widgetXstep;

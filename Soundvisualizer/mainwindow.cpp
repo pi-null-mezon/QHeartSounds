@@ -15,7 +15,7 @@
 #include "qconvertsound.h"
 #include "hbdlib.h"
 
-void lowpassfilter(const QVector<qreal> &_vX, QVector<qreal> &_vY, int _samplerate, int _targetsamplerate)
+void dropsamplerate(const QVector<qreal> &_vX, QVector<qreal> &_vY, int _samplerate, int _targetsamplerate)
 {
     assert(_samplerate > 0);
     assert(_targetsamplerate < _samplerate);
@@ -41,53 +41,6 @@ void lowpassfilter(const QVector<qreal> &_vX, QVector<qreal> &_vY, int _samplera
         _vY[i] = _vtemp[i*_window];
     }
 }
-
-QVector<qreal> detectHeartSound(const QVector<qreal> &_vS, int _samplerate)
-{
-    assert(_samplerate > 0);
-    // Drop sample rate to 125 Hz
-    const int _targetsamplerate = 125;
-    QVector<qreal> _vY;
-    lowpassfilter(_vS,_vY,_samplerate,_targetsamplerate);
-
-    // Normalize signal by it's energy
-    qreal _energy = 0.0;
-    for(int i = 0; i < _vY.size(); ++i) {
-        _energy += _vY[i]*_vY[i];
-    }
-    for(int i = 0; i < _vY.size(); ++i) {
-        _vY[i] = _vY[i]*_vY[i] / _energy;
-    }
-    // Make Shmid's trigger transformation
-    qreal _val = 0.0;
-    const qreal _thresh = 0.5;
-    bool _is_pulse = false;
-    for(int i = 0; i < _vY.size(); ++i) {
-        if((_vY[i] > 0.02) && !_is_pulse) {
-            _val = 2.0 * _thresh;
-            _is_pulse = true;
-        } else if((_vY[i] < 0.001) && _is_pulse) {
-            _val = 0.0;
-            _is_pulse = false;
-        }
-        _vY[i]= _val;
-    }
-    // Let's count pulses and evaluate pulses intervals
-    QVector<qreal> _vI;
-    _vI.reserve(_vY.size());
-    int _start = 0;
-    qreal _timesincelastfront = 0.0;
-    for(int i = 0; i < _vY.size() - 1; ++i) {
-        _timesincelastfront = (qreal)(i - _start)/_targetsamplerate;
-        if((_vY[i] < _thresh) && (_vY[i + 1] > _thresh) && (_timesincelastfront > 0.3)) {
-            _vI.push_back(_timesincelastfront);
-            _start = i;
-        }
-    }
-    _vI.push_back((qreal)(_vY.size() - 1 - _start)/_targetsamplerate);
-    return _vI;
-}
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -146,8 +99,23 @@ void MainWindow::readBuffer()
     if(qbuffer.data().size() > ui->minbuffersizeSP->value()) {
 
         ui->actualbuffersizeLE->setText(QString::number(qbuffer.data().size()));
-
         unpackSoundRecord(audioformat,qbuffer.data(),_vt,_vvs);
+
+        std::vector<float> _vdebug;
+        hbdlib::HBDError _hbderror;
+        bool _ishbdetected = hbdlib::searchHBinPCMAudio(   qbuffer.data().constData(),
+                                                           qbuffer.data().size(),
+                                                           audioformat.sampleType() == QAudioFormat::SampleType::SignedInt ? hbdlib::SignedInt : hbdlib::UnsignedInt,
+                                                           audioformat.channelCount(),
+                                                           audioformat.sampleSize(),
+                                                           audioformat.byteOrder() == QAudioFormat::Endian::LittleEndian ? hbdlib::LittleEndian : hbdlib::BigEndian,
+                                                           audioformat.sampleRate(),
+                                                           _vdebug,
+                                                           &_hbderror);
+        qInfo("%s", _ishbdetected ? "Heart beating detected" : "...nothing interesting...");
+        if(_hbderror != hbdlib::NoError) {
+            qInfo("HBDError code: %d", _hbderror);
+        }
 
         if(_vvs.size() > 0) {
             if(_vvs[0].size() > 0) {
@@ -158,16 +126,19 @@ void MainWindow::readBuffer()
                 ui->timelineLE->setText(QString::number(1000.0*_vvs[0].size()/audioformat.sampleRate(),'f',1));
                 //-------------------------------------------------------------------
                 static QVector<qreal> _vf;
-                /*lowpassfilter(_vvs[0],_vf,audioformat.sampleRate(),ui->lpfsamplerateSP->value());
-                ui->filterplotW->updateSignal(-_vlim,_vlim,_vf.data(),_vf.size());
+                _vf.resize(_vdebug.size());
+                for(unsigned int i = 0; i < _vf.size(); ++i)
+                    _vf[i] = _vdebug[i];
+
+
+                //dropsamplerate(_vvs[0],_vf,audioformat.sampleRate(),ui->lpfsamplerateSP->value());
+                ui->filterplotW->updateSignal(_vf.data(),_vf.size());
                 ui->lpfbuffersizeLE->setText(QString::number(_vf.size()*sizeof(_vf[0])));
                 ui->lpfsamplesLE->setText(QString::number(_vf.size()));
-                ui->lpftimelineLE->setText(QString::number(1000.0*_vf.size()/ui->lpfsamplerateSP->value(),'f',1));*/
-
-                _vf = detectHeartSound(_vvs[0],audioformat.sampleRate());
-                ui->filterplotW->updateSignal(_vf.data(),_vf.size());
+                ui->lpftimelineLE->setText(QString::number(1000.0*_vf.size()/ui->lpfsamplerateSP->value(),'f',1));
             }
         }
+
 
         // Clean buffer
         qbuffer.reset();
