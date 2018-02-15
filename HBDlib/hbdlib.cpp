@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <assert.h>
 
-#include <iostream>
+#define AUDIORECORD_MIN_LENGTH_SECONDS 4.0f // empirical constant
+#define AUDIORECORD_MIN_SAMPLERATE 200      // empirical constant
 
 namespace hbdlib {
 
@@ -91,18 +92,8 @@ T computeStdev(const std::vector<T> &_vX)
 }
 
 // Use to unpack audio/pcm data into real values vectors
-HBDError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, Endianness _sampleendianness, unsigned int _samplerate, std::vector<float> &_vt, std::vector<std::vector<float>> &_vvs)
-{
-    if(_sampleendianness != LittleEndian) {
-        return UnsupportedEndianness;
-    }
-    if(_samplerate == 0) {
-        return UnsupportedSamplerate;
-    }
-    if(_channels == 0) {
-        return UnsupportedNumberOfChannels;
-    }
-
+void unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, ByteOrder _samplebyteorder, unsigned int _samplerate, std::vector<float> &_vt, std::vector<std::vector<float>> &_vvs)
+{  
     _vvs.resize(_channels);
     unsigned int _samplestep = _samplesize/8;
     unsigned int _framestep = _samplestep*_channels;
@@ -115,55 +106,101 @@ HBDError unpackSoundRecord(const char *_data, unsigned int _size, SampleType _sa
     switch(_sampletype) {
 
         case SignedInt: {
-            int16_t _tmp;
-            for(unsigned int i = 0; i < _length; ++i) {
-                _vt[i] = (float)i/_samplerate;
-                for(unsigned int j = 0; j < _channels; ++j) {
-                    unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
-                    _vvs[j][i] = _tmp;
+            if(_samplesize == 8) {
+                int8_t _tmp;
+                for(unsigned int i = 0; i < _length; ++i) {
+                    _vt[i] = (float)i/_samplerate;
+                    for(unsigned int j = 0; j < _channels; ++j) {
+                        unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_samplesize == 16) {
+                int16_t _tmp;
+                for(unsigned int i = 0; i < _length; ++i) {
+                    _vt[i] = (float)i/_samplerate;
+                    for(unsigned int j = 0; j < _channels; ++j) {
+                        unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_samplesize == 32) {
+                int32_t _tmp;
+                for(unsigned int i = 0; i < _length; ++i) {
+                    _vt[i] = (float)i/_samplerate;
+                    for(unsigned int j = 0; j < _channels; ++j) {
+                        unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            }
+        } break;
+
+        case UnSignedInt: {
+            if(_samplesize == 8) {
+                uint8_t _tmp;
+                for(unsigned int i = 0; i < _length; ++i) {
+                    _vt[i] = (float)i/_samplerate;
+                    for(unsigned int j = 0; j < _channels; ++j) {
+                        unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_samplesize == 16) {
+                uint16_t _tmp;
+                for(unsigned int i = 0; i < _length; ++i) {
+                    _vt[i] = (float)i/_samplerate;
+                    for(unsigned int j = 0; j < _channels; ++j) {
+                        unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_samplesize == 32) {
+                uint32_t _tmp;
+                for(unsigned int i = 0; i < _length; ++i) {
+                    _vt[i] = (float)i/_samplerate;
+                    for(unsigned int j = 0; j < _channels; ++j) {
+                        unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
                 }
             }
         } break;
 
         case Float: {
-            float _tmp;
-            for(unsigned int i = 0; i < _length; ++i) {
-                _vt[i] = (float)i/_samplerate;
-                for(unsigned int j = 0; j < _channels; ++j) {
-                    unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
-                    _vvs[j][i] = _tmp;
+            if(_samplesize == 32) {
+                float _tmp;
+                for(unsigned int i = 0; i < _length; ++i) {
+                    _vt[i] = (float)i/_samplerate;
+                    for(unsigned int j = 0; j < _channels; ++j) {
+                        unpackBytes(_data, i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
                 }
             }
         } break;
 
         default:
-            return UnsupportedSmpleType;
-
+            break;
     }
-    return NoError;
 }
 
 // Use to detect heart beating in audio record
-bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, Endianness _sampleendianness, unsigned int _samplerate, std::vector<float> &_vdebug, HBDError *_error)
+bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, ByteOrder _samplebyteorder, unsigned int _samplerate, HBDError *_error)
 {   
+    // Let's check if audio data is compliant
+    HBDError _err = NoError;
+    if(getAudioRecordMinLength(_sampletype,_channels,_samplesize,_samplebyteorder,_samplerate,&_err) > _size)
+        _err = TooShortRecord;
+    if(_error != 0)
+        *_error = _err;
+    if(_err != NoError)
+        return false;
+
+    // Now We can decode audio data
     std::vector<float> _vt;
     std::vector<std::vector<float>> _vvs;
-
-    HBDError _err;
-    float _recordtime_s = (((float)_size/(float)_channels)/(float)(_samplesize/8))/(float)_samplerate;
-    if(_recordtime_s < 3.9) {
-        _err = TooShortRecord;
-    } else {
-        _err = unpackSoundRecord(_data,_size,_sampletype,_channels,_samplesize,_sampleendianness,_samplerate,_vt,_vvs);
-    }
-
-    if(_error != 0) {
-        *_error = _err;
-    }
-
-    if(_err != NoError) {
-        return false;
-    }
+    unpackSoundRecord(_data,_size,_sampletype,_channels,_samplesize,_samplebyteorder,_samplerate,_vt,_vvs);
 
     // HEART BEATS DETECTION ALGORITHM
 
@@ -180,6 +217,17 @@ bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampl
     }
 
     // Let's transform signal to standard for this function value range
+    /*if(_sampletype == SignedInt) {
+        unsigned int _limit = (uint64_t)0x01 << (_samplesize - 1);
+        for(unsigned int i = 0; i < _vY.size(); ++i) {
+            _vY[i] = _vY[i]/_limit;
+        }
+    } else if(_sampletype == UnSignedInt) {
+        unsigned int _limit = (uint64_t)0x01 << (_samplesize - 1);
+        for(unsigned int i = 0; i < _vY.size(); ++i) {
+            _vY[i] = _vY[i]/_limit - 1.0f;
+        }
+    }*/
     std::vector<float> _vS = differentiate(_vY,1);
     for(unsigned int i = 0; i < _vS.size(); ++i) {
         _vS[i] = std::abs(_vS[i]);
@@ -190,12 +238,12 @@ bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampl
     }
 
     // Let's count pulses
-    const float _timethresh = 0.275f; // empirical constant in seconds
+    const float _timethresh = 0.175f; // empirical constant in seconds
     std::vector<float> _vI; _vI.reserve(64);
     float _timemark = 0.0f, _timeshift;
     for(unsigned int i = 0; i < _vS.size(); ++i) {
         _timeshift = _vTime[i] - _timemark;
-        if((_vS[i] > 27.5) && (_timeshift > _timethresh)) { // empirical constant
+        if((_vS[i] > 40.0) && (_timeshift > _timethresh)) { // empirical constant
             _vI.push_back(_timeshift);
             _timemark = _vTime[i];
         }
@@ -206,21 +254,15 @@ bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampl
         _vI.push_back(_timeshift);
     }
 
-    _vdebug = _vS;
-
     // Now we are ready to compute features and classify signal
     float _uniformity = computeUniformity(_vI);
     float _hr = 60.0f / (2.0f* computeMean(_vI));
-    std::cout << "Intervals size: " << _vI.size() << std::endl
+    /*std::cout << "Intervals size: " << _vI.size() << std::endl
               << "Intervals meanval: " << computeMean(_vI) << std::endl
               << "_uniformity: " << _uniformity << std::endl
-              << "_hr:"          << _hr << std::endl;
-    for(unsigned int i = 0; i < _vI.size(); ++i) {
-        std::cout << _vI[i] << "; ";
-    }
-    std::cout << std::endl;
+              << "_hr:"          << _hr << std::endl << std::endl;*/
 
-    if((_uniformity > 0.333) && (_uniformity < 0.7f)) {// empirical constants
+    if((_uniformity > 0.35f) && (_uniformity < 0.85f)) { // empirical constants
         if((_hr > 55.f) && (_hr < 135.f)) {
             return true;
         }
@@ -228,6 +270,36 @@ bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampl
     // END
 
     return false;
+}
+
+const char *errorCodeDescription(HBDError _error) {
+
+    static const char * _errordscr[] = {"All seems to be good ;)",
+                                        "Unsupported audio format (try to use 16 bit, signed, little endian)",
+                                        "Too short record (check that audio record's length is greater than 4 seconds)"};
+    switch(_error) {
+
+        case UnsupportedAudioFormat:
+            return _errordscr[1];
+
+        case TooShortRecord:
+            return _errordscr[2];
+
+        default:
+            return _errordscr[0];
+    }
+}
+
+unsigned int getAudioRecordMinLength(SampleType _sampletype, unsigned int _channels, unsigned int _samplesize, ByteOrder _samplebyteorder, unsigned int _samplerate, HBDError *_error)
+{
+    HBDError _err = NoError;
+    if( (_samplebyteorder != LittleEndian) || (_samplesize < 16) ||
+        (_samplerate < AUDIORECORD_MIN_SAMPLERATE) || (_channels < 1) || (_sampletype != SignedInt)) {
+        _err =  UnsupportedAudioFormat;
+    }
+    if(_error != 0)
+        *_error = _err;
+    return AUDIORECORD_MIN_LENGTH_SECONDS*_samplerate*_channels*(_samplesize/8);
 }
 
 }// end of hbdlib namespace

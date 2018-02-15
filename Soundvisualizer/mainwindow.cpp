@@ -101,37 +101,35 @@ void MainWindow::readBuffer()
         ui->actualbuffersizeLE->setText(QString::number(qbuffer.data().size()));
         unpackSoundRecord(audioformat,qbuffer.data(),_vt,_vvs);
 
-        std::vector<float> _vdebug;
         hbdlib::HBDError _hbderror;
         bool _ishbdetected = hbdlib::searchHBinPCMAudio(   qbuffer.data().constData(),
                                                            qbuffer.data().size(),
-                                                           audioformat.sampleType() == QAudioFormat::SampleType::SignedInt ? hbdlib::SignedInt : hbdlib::UnsignedInt,
+                                                           (hbdlib::SampleType)audioformat.sampleType(),
                                                            audioformat.channelCount(),
                                                            audioformat.sampleSize(),
-                                                           audioformat.byteOrder() == QAudioFormat::Endian::LittleEndian ? hbdlib::LittleEndian : hbdlib::BigEndian,
+                                                           (hbdlib::ByteOrder)audioformat.byteOrder(),
                                                            audioformat.sampleRate(),
-                                                           _vdebug,
                                                            &_hbderror);
+
         qInfo("%s", _ishbdetected ? "Heart beating detected" : "...nothing interesting...");
         if(_hbderror != hbdlib::NoError) {
-            qInfo("HBDError code: %d", _hbderror);
+            qInfo("HBDError code: %s",  hbdlib::errorCodeDescription(_hbderror));
         }
 
         if(_vvs.size() > 0) {
             if(_vvs[0].size() > 0) {
-                qreal _vlim = (qreal)((quint32)0x01 << (audioformat.sampleSize() - 1));
+                qreal _vlimT = 1.0, _vlimB = -1.0;
+                if(audioformat.sampleType() != QAudioFormat::Float) {
+                    _vlimT = (qreal)((quint64)0x01 << audioformat.sampleSize());;
+                    _vlimB = -_vlimT;
+                }
                 //-------------------------------------------------------------------
-                ui->plotW->updateSignal(-_vlim,_vlim,_vvs[0].data(),_vvs[0].size());
+                ui->plotW->updateSignal(_vlimB,_vlimT,_vvs[0].data(),_vvs[0].size());
                 ui->samplesperscreenLE->setText(QString::number(_vvs[0].size()));
                 ui->timelineLE->setText(QString::number(1000.0*_vvs[0].size()/audioformat.sampleRate(),'f',1));
                 //-------------------------------------------------------------------
                 static QVector<qreal> _vf;
-                _vf.resize(_vdebug.size());
-                for(unsigned int i = 0; i < _vf.size(); ++i)
-                    _vf[i] = _vdebug[i];
-
-
-                //dropsamplerate(_vvs[0],_vf,audioformat.sampleRate(),ui->lpfsamplerateSP->value());
+                dropsamplerate(_vvs[0],_vf,audioformat.sampleRate(),ui->lpfsamplerateSP->value());
                 ui->filterplotW->updateSignal(_vf.data(),_vf.size());
                 ui->lpfbuffersizeLE->setText(QString::number(_vf.size()*sizeof(_vf[0])));
                 ui->lpfsamplesLE->setText(QString::number(_vf.size()));

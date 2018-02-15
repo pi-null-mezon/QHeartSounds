@@ -24,53 +24,102 @@ bool unpackSoundRecord(const QAudioFormat &_aformat, const QByteArray &_barray, 
     const int _channels = _aformat.channelCount();
     _vvs.resize(_channels);
 
-    // Signed integer
-    switch(_aformat.sampleType()) {
+
+    int _samplestep = _aformat.sampleSize()/8;
+    int _framestep = _aformat.bytesPerFrame(); // frame size in bytes, same as _aformat.bytesPerFrame()
+    int _length = _barray.size() / _framestep;
+    _vt.resize(_length);
+    for(int j = 0; j < _channels; ++j) {
+        _vvs[j].resize(_length);
+    }
+
+
+    switch (_aformat.sampleType()) {
 
         case QAudioFormat::SignedInt: {
-            //Let's allocate memory first
-            int _samplestep = _aformat.sampleSize()/8;
-            int _framestep = _aformat.bytesPerFrame(); // frame size in bytes, same as _aformat.bytesPerFrame()
-            int _length = _barray.size() / _framestep;
-            _vt.resize(_length);
-            for(int j = 0; j < _channels; ++j) {
-                _vvs[j].resize(_length);
-            }
-            qint16 _tmp;
-            for(int i = 0; i < _length; ++i) {
-                _vt[i] = (double)i/_aformat.sampleRate();
-                for(int j = 0; j < _channels; ++j) {
-                    unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
-                    _vvs[j][i] = _tmp;
+            if(_aformat.sampleSize() == 8) {
+                quint8 _tmp;
+                for(int i = 0; i < _length; ++i) {
+                    _vt[i] = (qreal)i/_aformat.sampleRate();
+                    for(int j = 0; j < _channels; ++j) {
+                        unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_aformat.sampleSize() == 16) {
+                qint16 _tmp;
+                for(int i = 0; i < _length; ++i) {
+                    _vt[i] = (qreal)i/_aformat.sampleRate();
+                    for(int j = 0; j < _channels; ++j) {
+                        unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_aformat.sampleSize() == 32) {
+                qint32 _tmp;
+                for(int i = 0; i < _length; ++i) {
+                    _vt[i] = (qreal)i/_aformat.sampleRate();
+                    for(int j = 0; j < _channels; ++j) {
+                        unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
                 }
             }
+            return true;
+        } break;
+
+        case QAudioFormat::UnSignedInt: {
+            if(_aformat.sampleSize() == 8) {
+                quint8 _tmp; // yes, it is Qt's strange stuff
+                for(int i = 0; i < _length; ++i) {
+                    _vt[i] = (qreal)i/_aformat.sampleRate();
+                    for(int j = 0; j < _channels; ++j) {
+                        unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_aformat.sampleSize() == 16) {
+                qint16 _tmp;
+                for(int i = 0; i < _length; ++i) {
+                    _vt[i] = (qreal)i/_aformat.sampleRate();
+                    for(int j = 0; j < _channels; ++j) {
+                        unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            } else if(_aformat.sampleSize() == 32) {
+                qint32 _tmp;
+                for(int i = 0; i < _length; ++i) {
+                    _vt[i] = (qreal)i/_aformat.sampleRate();
+                    for(int j = 0; j < _channels; ++j) {
+                        unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
+                }
+            }
+            return true;
         } break;
 
         case QAudioFormat::Float: {
-            //Let's allocate memory first
-            int _samplestep = _aformat.sampleSize()/8;
-            int _framestep = _aformat.bytesPerFrame(); // frame size in bytes, same as _aformat.bytesPerFrame()
-            int _length = _barray.size() / _framestep;
-            _vt.resize(_length);
-            for(int j = 0; j < _channels; ++j) {
-                _vvs[j].resize(_length);
-            }
-            float _tmp;
-            for(int i = 0; i < _length; ++i) {
-                _vt[i] = (double)i/_aformat.sampleRate();
-                for(int j = 0; j < _channels; ++j) {
-                    unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
-                    _vvs[j][i] = _tmp;
+            if(_aformat.sampleSize() == 32) {
+                float _tmp;
+                for(int i = 0; i < _length; ++i) {
+                    _vt[i] = (qreal)i/_aformat.sampleRate();
+                    for(int j = 0; j < _channels; ++j) {
+                        unpackBytes(_barray.data(), i*_framestep + j*_samplestep, _tmp);
+                        _vvs[j][i] = _tmp;
+                    }
                 }
             }
+            return true;
         } break;
 
         default:
-            qWarning(QString("Unsupported sample type in audio format (%1)!").arg(QString::number(_aformat.sampleType())).toUtf8().constData());
-            return false;
-
+        break;
     }
-    return true;
+
+    qWarning("Unsupported audio format!");
+    return false;
 }
 
 #endif // QCONVERTSOUND_H
