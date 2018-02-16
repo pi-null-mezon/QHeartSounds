@@ -26,8 +26,6 @@ linux {
     PATH_TO_HBDLIB_BINARIES = $${PATH_TO_HBDLIB_SOURCES}/bin
 }
 
-message($${PATH_TO_HBDLIB_BINARIES})
-
 LIBS += -L$${PATH_TO_HBDLIB_BINARIES} \
         -l$$qtLibraryName(hbdlib)
 

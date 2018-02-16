@@ -40,3 +40,4 @@ FORMS += \
         mainwindow.ui
 
 include($${PWD}/hbdlib.pri)
+include($${PWD}/../Waveletlib/waveletlib.pri)
