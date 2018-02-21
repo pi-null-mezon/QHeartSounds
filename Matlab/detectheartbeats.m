@@ -1,32 +1,32 @@
 function [ is_heart_beating_sound ] = detectheartbeats( filename )
 
 Data = csvread(filename,1,0);
-load('lpfe125','ellipticlpf');
-Y = filter(ellipticlpf,Data(:,2));
+[Y, W] = dropsamplerate(Data(:,2),8000,200);
 S = abs(diff(Y));
-figure
-plot(diff(Y));
-Stdev = std(S);
-S = S / Stdev;
+%figure
+%plot(Y);
+S = S / std(S);
 
 Bin = zeros(size(S));
-timethresh = 0.275;
+timethresh = 0.175;
 timemark = 0;
 vI = 0;
 intervals = 1;
+T = Data(1:W:end,1); 
 
 for i = 1:size(Bin,1)
-   if (S(i) > 2.5)
-       if (Data(i,1) - timemark) > timethresh 
-            vI(intervals) = Data(i,1) - timemark;
+   if(S(i) > 2.0)
+       timeshift = T(i,1) - timemark; 
+       if timeshift > timethresh 
+            vI(intervals) = timeshift;
             intervals = intervals + 1;
             Bin(i) = 10;
-            timemark = Data(i,1);
+            timemark = T(i,1);
        end
    end
 end
-if(Data(size(Data,1),1) - timemark) > timethresh/2.0
-    vI(intervals) = Data(size(Data,1),1) - timemark;
+if(T(end) - timemark) > timethresh/2.0
+    vI(intervals) = T(end) - timemark;
 end
 
 figure('Name',filename)

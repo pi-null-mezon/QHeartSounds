@@ -59,7 +59,7 @@ template<typename T>
 std::vector<T> differentiate(const std::vector<T> &_vX, unsigned int _step)
 {
     assert(_vX.size() > _step);
-    std::vector<T> _vY (_vX.size()-_step,0);
+    std::vector<T> _vY(_vX.size()-_step,0);
     for(unsigned int i = 0; i < _vY.size(); ++i) {
         _vY[i] = _vX[i+_step] - _vX[i];
     }
@@ -87,8 +87,7 @@ T computeStdev(const std::vector<T> &_vX)
     for(unsigned int i = 0; i < _vX.size(); ++i) {
         _stdev += (_vX[i]-_mean)*(_vX[i]-_mean);
     }
-    return std::sqrt(_stdev) / (_vX.size() - 1);
-
+    return std::sqrt(_stdev / (_vX.size() - 1));
 }
 
 // Use to unpack audio/pcm data into real values vectors
@@ -243,7 +242,7 @@ bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampl
     float _timemark = 0.0f, _timeshift;
     for(unsigned int i = 0; i < _vS.size(); ++i) {
         _timeshift = _vTime[i] - _timemark;
-        if((_vS[i] > 40.0) && (_timeshift > _timethresh)) { // empirical constant
+        if((_vS[i] > 1.45f) && (_timeshift > _timethresh)) { // empirical constant
             _vI.push_back(_timeshift);
             _timemark = _vTime[i];
         }
@@ -263,7 +262,7 @@ bool searchHBinPCMAudio(const char *_data, unsigned int _size, SampleType _sampl
               << "_hr:"          << _hr << std::endl << std::endl;*/
 
     if((_uniformity > 0.35f) && (_uniformity < 0.85f)) { // empirical constants
-        if((_hr > 55.f) && (_hr < 135.f)) {
+        if((_hr > 55.f) && (_hr < 135.f)) { // empirical constants
             return true;
         }
     }

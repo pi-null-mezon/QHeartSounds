@@ -168,9 +168,9 @@ void MainWindow::__saveSignalBuffer()
             _dir.cd("Records");
             QFile _file(_dir.absolutePath().append("/%1 (%2).csv").arg(APP_NAME,QDateTime::currentDateTime().toString("hhmmss-ddMMyyyy")));
             if(_file.open(QFile::WriteOnly)) {
-                _file.write("Time[s],Value\n");
+                _file.write(QString("Samplerate: %1 Hz\n------------\n").arg(QString::number(audioformat.sampleRate())).toUtf8());
                 for(int i = 0; i < _vvs[0].size(); ++i) {
-                    _file.write(QString("%1,%2\n").arg(QString::number(_vt[i],'f',7),QString::number(_vvs[0][i],'f',0)).toUtf8());
+                    _file.write(QString("%1\n").arg(QString::number(_vvs[0][i],'f',0)).toUtf8());
                 }
                 qInfo("Record has been saved");
             }
